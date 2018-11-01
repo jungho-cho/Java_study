@@ -12,7 +12,7 @@ public class MapTest {
 		System.out.println("get peo =>" + map.get("peo"));
 		System.out.println("is contain peo => " + map.containsKey("peo"));
 		System.out.println("remove peo => " + map.remove("peo"));
-		System.out.println("size => " + map.size());
+		System.out.println("size => " + map.size()  );
 	}
 
 }
