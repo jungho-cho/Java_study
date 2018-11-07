@@ -6,16 +6,16 @@ public class Animal {
 		this.name = name;
 	}
 	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Animal cat = new Animal();
-		cat.setName("Bonbon");
-		
-		Animal dog = new Animal();
-		dog.setName("happy");
-		
-		System.out.println(cat.name);
-		System.out.println(dog.name);
-	}
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		Animal cat = new Animal();
+//		cat.setName("Bonbon");
+//		
+//		Animal dog = new Animal();
+//		dog.setName("happy");
+//		
+//		System.out.println(cat.name);
+//		System.out.println(dog.name);
+//	}
 
 }
