@@ -26,12 +26,21 @@ class CalculatorFrame extends JFrame implements ActionListener{
 	JButton plusButton;
 	JButton resultButton;
 	
+	String strCurrentOperator = "";
+	String strBeforeOperator = "";
+	
+	int currentNumber = 0;
+	int beforeNumber = 0;
+	
+	boolean isExcuted = false;
+	boolean isInit = false;
 	
 	CalculatorFrame(String name) {
 		super(name);
 		initPanels();
 		initTextArea();
 		initButtons();
+		initData();
 	}
 	
 	void initPanels() {
@@ -154,12 +163,41 @@ class CalculatorFrame extends JFrame implements ActionListener{
 			addNumber(numberButtons[8].getText());
 		} else if (e.getSource() == numberButtons[9]) {
 			addNumber(numberButtons[9].getText());
-		}
-		
-		
-		System.out.println("getSource => " + e.getSource());
+		} else if (e.getSource() == clearErrorButton) {
+			initData();
+		} else if (e.getSource() == clearButton) {
+			initData();
+		} else if (e.getSource() == eraserButton) {
+			eraserNumber();
+		} else if (e.getSource() == plusButton) {
+			setOperator("+");
+			excuteOperator();
+		} else if (e.getSource() == minusButton) {
+			setOperator("-");
+			excuteOperator();
+		} else if (e.getSource() == divideButton) {
+			setOperator("/");
+			excuteOperator();
+		} else if (e.getSource() == muliplyButton) {
+			setOperator("*");
+			excuteOperator();
+		} else if (e.getSource() == resultButton) {
+			setOperator("=");
+			excuteOperator();
+			this.strCurrentOperator = "";
+			this.strBeforeOperator = "";
+		} else {
+			System.out.println("wrong event!! => " + e.getSource());
+		}		
 	}
 	
+	void initData() {
+		textArea.setText("0");
+		currentNumber = 0;
+		beforeNumber = 0;
+		strCurrentOperator = "";
+		strBeforeOperator = "";
+	}
 	void addNumber(String strNumber) {
 		String currentNumber = textArea.getText();
 		
@@ -167,14 +205,68 @@ class CalculatorFrame extends JFrame implements ActionListener{
 			return;
 		}
 
-		System.out.println("current number => " + currentNumber);
+//		System.out.println("current number => " + currentNumber);
 
+		if (isExcuted == true) {
+			textArea.setText("");
+			isExcuted = false;
+		}
+		
 		if (currentNumber.equals("0")) {
 			System.out.println("current number is zero");
 			textArea.setText("");
 		}
 		
+		isInit = false;
 		textArea.append(strNumber);
+		
+//		System.out.println("textarea => " + textArea.getText());
+		this.currentNumber = new Integer(textArea.getText()).intValue();
+		
+//		System.out.println("first number : " + firstNumber);
+	}
+	
+	void eraserNumber() {
+		System.out.println("text area length => " + textArea.getText().length());
+		if (textArea.getText().length() <= 1) {
+			textArea.setText("0");
+			isInit = true;
+		} else {
+			String str = textArea.getText();
+			textArea.setText(str.substring(0, str.length()-1));
+		}
+	}
+	void setOperator(String operator) {
+		if (isInit) {
+			return;
+		}
+		
+		this.strCurrentOperator = operator;
+	}
+	
+	void excuteOperator() {
+		if (isExcuted) {
+			this.strBeforeOperator = this.strCurrentOperator;
+			return;
+		}
+		
+		isExcuted = true;
+		if (this.strBeforeOperator.equals("+")) { 
+			currentNumber = beforeNumber + currentNumber;
+			textArea.setText(Integer.toString(currentNumber));
+		} else if (this.strBeforeOperator.equals("-")) { 
+			currentNumber = beforeNumber - currentNumber;
+			textArea.setText(Integer.toString(currentNumber));
+		} else if (this.strBeforeOperator.equals("*")) { 
+			currentNumber = beforeNumber * currentNumber;
+			textArea.setText(Integer.toString(currentNumber));
+		} else if (this.strBeforeOperator.equals("/")) { 
+			currentNumber = beforeNumber / currentNumber;
+			textArea.setText(Integer.toString(currentNumber));
+		}
+		
+		this.strBeforeOperator = this.strCurrentOperator;
+		this.beforeNumber = this.currentNumber;
 	}
 }
 public class Calculator {
