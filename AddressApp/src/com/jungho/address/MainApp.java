@@ -1,10 +1,18 @@
 package com.jungho.address;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.prefs.Preferences;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import com.jungho.address.model.Person;
+import com.jungho.address.model.PersonListWrapper;
 import com.jungho.address.view.PersonEditDialogController;
 import com.jungho.address.view.PersonOverviewController;
+import com.jungho.address.view.RootLayoutController;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -12,6 +20,9 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
@@ -29,15 +40,16 @@ public class MainApp extends Application {
 	
 	public MainApp() {
 		// TODO Auto-generated constructor stub
-		personData.add(new Person("Hans", "Muster"));
-        personData.add(new Person("Ruth", "Mueller"));
-        personData.add(new Person("Heinz", "Kurz"));
-        personData.add(new Person("Cornelia", "Meier"));
-        personData.add(new Person("Werner", "Meyer"));
-        personData.add(new Person("Lydia", "Kunz"));
-        personData.add(new Person("Anna", "Best"));
-        personData.add(new Person("Stefan", "Meier"));
-        personData.add(new Person("Martin", "Mueller"));
+//		test Datas
+//		personData.add(new Person("Hans", "Muster"));
+//        personData.add(new Person("Ruth", "Mueller"));
+//        personData.add(new Person("Heinz", "Kurz"));
+//        personData.add(new Person("Cornelia", "Meier"));
+//        personData.add(new Person("Werner", "Meyer"));
+//        personData.add(new Person("Lydia", "Kunz"));
+//        personData.add(new Person("Anna", "Best"));
+//        personData.add(new Person("Stefan", "Meier"));
+//        personData.add(new Person("Martin", "Mueller"));
 	}
 	
 	public ObservableList<Person> getPersonData() {
@@ -48,6 +60,8 @@ public class MainApp extends Application {
 		this.primaryStage = primaryStage;
 		this.primaryStage.setTitle("Address App");
 
+		this.primaryStage.getIcons().add(new Image("file::resources/images/address_icon.png"));
+		
 		initRootLayou();
 		
 		showPersonOverView();
@@ -61,9 +75,18 @@ public class MainApp extends Application {
 
 			Scene scene = new Scene(rootLayout);
 			primaryStage.setScene(scene);
+			
+			RootLayoutController controller = loader.getController();
+			controller.setMainApp(this);
+			
 			primaryStage.show();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		
+		File file = getPersonFilePath();
+		if (file != null) {
+			loadPersonDataFromFile(file);
 		}
 	}
 
@@ -107,7 +130,70 @@ public class MainApp extends Application {
 			return false;
 		}
 	}
+	
+	public void loadPersonDataFromFile(File file) {
+		try {
+			JAXBContext context = JAXBContext.newInstance(PersonListWrapper.class);
+			Unmarshaller um = context.createUnmarshaller();
+			
+			PersonListWrapper wrapper = (PersonListWrapper) um.unmarshal(file);
+			
+			personData.clear();
+			personData.addAll(wrapper.getPersons());
+			
+			setPersonFilePath(file);
+		} catch (Exception e) {
+			Alert alert = new Alert(AlertType.ERROR);
+	        alert.setTitle("Error");
+	        alert.setHeaderText("Could not load data");
+	        alert.setContentText("Could not load data from file:\n" + file.getPath());
 
+	        alert.showAndWait();
+		}
+	}
+	
+	public void savePersonDataToFile(File file) {
+		try {
+			JAXBContext context = JAXBContext.newInstance(PersonListWrapper.class);
+			Marshaller m = context.createMarshaller();
+			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			
+			PersonListWrapper wrapper = new PersonListWrapper();
+			wrapper.setPersons(personData);
+			
+			m.marshal(wrapper, file);
+			
+			setPersonFilePath(file);
+		} catch (Exception e) { 
+	        Alert alert = new Alert(AlertType.ERROR);
+	        alert.setTitle("Error");
+	        alert.setHeaderText("Could not save data");
+	        alert.setContentText("Could not save data to file:\n" + file.getPath());
+
+	        alert.showAndWait();
+	    }
+	}
+	public void setPersonFilePath(File file) {
+		Preferences prefs = Preferences.userNodeForPackage(MainApp.class);
+		if (file != null) {
+			prefs.put("filePath", file.getPath());
+			
+			primaryStage.setTitle("Address App - " + file.getName());
+		} else {
+			prefs.remove("filePath");
+			
+			primaryStage.setTitle("Address App");
+		}
+	}
+	public File getPersonFilePath() {
+		Preferences prefs = Preferences.userNodeForPackage(MainApp.class);
+		String filePath = prefs.get("filePath", null);
+		if (filePath != null) {
+			return new File(filePath);
+		} else {
+			return null;
+		}
+	}
 	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
